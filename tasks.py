@@ -22,7 +22,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 # views
 @view_config(route_name='list', renderer='list.mako')
 def list_view(request):
-    rs = request.db.execute("select id, name from tasks where closed = 0")
+    rs = request.cursor.execute("select id, name from tasks where closed = false")
     tasks = [dict(id=row[0], name=row[1]) for row in rs.fetchall()]
     return {'tasks': tasks}
 
@@ -42,7 +42,7 @@ def new_view(request):
 @view_config(route_name='close')
 def close_view(request):
     task_id = int(request.matchdict['id'])
-    request.db.execute("update tasks set closed = ? where id = ?", (1, task_id))
+    request.cursor("update tasks set closed = ? where id = ?", (1, task_id))
     request.db.commit()
     request.session.flash('Task was successfully closed!')
     return HTTPFound(location=request.route_url('list'))
@@ -56,7 +56,8 @@ def notfound_view(self):
 def new_request_subscriber(event):
     request = event.request
     settings = request.registry.settings
-    request.db = sqlite3.connect(settings['db'])
+    request.db = psycopg2.connect(settings['db'])
+    request.cursor = request.db.cursor() 
     
 @subscriber(ApplicationCreated)
 def application_created_subscriber(event):
