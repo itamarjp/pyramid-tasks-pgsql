@@ -11,7 +11,8 @@ from pyramid.view import view_config
 
 from wsgiref.simple_server import make_server
 
-import sqlite3
+import psycopg2
+import psycopg2.extras
 
 logging.basicConfig()
 log = logging.getLogger(__file__)
@@ -56,10 +57,6 @@ def new_request_subscriber(event):
     request = event.request
     settings = request.registry.settings
     request.db = sqlite3.connect(settings['db'])
-    request.add_finished_callback(close_db_connection)
-
-def close_db_connection(request):
-    request.db.close()
     
 @subscriber(ApplicationCreated)
 def application_created_subscriber(event):
@@ -78,7 +75,7 @@ if __name__ == '__main__':
     settings['reload_all'] = True
     settings['debug_all'] = True
     settings['mako.directories'] = os.path.join(here, 'templates')
-    settings['db'] = os.path.join(here, 'tasks.db')
+    settings['db'] = psycopg2.connect(host='localhost',database='tasks',user='postgres',password='',)
     # session factory
     session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
     # configuration setup
