@@ -64,9 +64,13 @@ def application_created_subscriber(event):
     f = open(os.path.join(here, 'schema.sql'), 'r')
     stmt = f.read()
     settings = event.app.registry.settings
-    db = sqlite3.connect(settings['db'])
-    db.executescript(stmt)
-    db.commit()
+    db = psycopg2.connect(settings['db'])
+    cursor = db.cursor() 
+    try:
+       cursor.execute(stmt)
+       db.commit()
+    except:
+       pass
     f.close()
 
 if __name__ == '__main__':
@@ -75,7 +79,7 @@ if __name__ == '__main__':
     settings['reload_all'] = True
     settings['debug_all'] = True
     settings['mako.directories'] = os.path.join(here, 'templates')
-    settings['db'] = psycopg2.connect(host='localhost',database='tasks',user='postgres',password='',)
+    settings['db'] = ('host=localhost dbname=tasks user=postgres password= port=5432')
     # session factory
     session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
     # configuration setup
