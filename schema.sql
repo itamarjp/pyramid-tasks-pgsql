@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS tasks;
+
 CREATE TABLE IF NOT EXISTS tasks
 (
     id serial NOT NULL PRIMARY KEY,

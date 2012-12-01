@@ -22,7 +22,9 @@ here = os.path.dirname(os.path.abspath(__file__))
 # views
 @view_config(route_name='list', renderer='list.mako')
 def list_view(request):
+    print request.cursor
     rs = request.cursor.execute("select id, name from tasks where closed = false")
+    print rs;
     tasks = [dict(id=row[0], name=row[1]) for row in rs.fetchall()]
     return {'tasks': tasks}
 
@@ -67,11 +69,8 @@ def application_created_subscriber(event):
     settings = event.app.registry.settings
     db = psycopg2.connect(settings['db'])
     cursor = db.cursor() 
-    try:
-       cursor.execute(stmt)
-       db.commit()
-    except:
-       pass
+    cursor.execute(stmt)
+    db.commit()
     f.close()
 
 if __name__ == '__main__':
